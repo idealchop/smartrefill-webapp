@@ -41,7 +41,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { RefillWiseLogo } from "@/components/logo";
+import { SmartRefillLogo } from "@/components/logo";
 
 // Mock Data
 const upcomingRefills = [
@@ -108,7 +108,7 @@ export default function DashboardPage() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <RefillWiseLogo />
+          <SmartRefillLogo />
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
