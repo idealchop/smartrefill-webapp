@@ -1,7 +1,16 @@
-export default function Page() {
+
+'use client';
+
+import LandingPage from "./landing/page";
+import { Suspense } from "react";
+
+export default function Home() {
+  // The root of the application now renders the new landing page.
+  // The LanguageProvider is intentionally removed from here to ensure
+  // the landing page always defaults to English.
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-muted/40">
-      <h1 className="text-4xl font-bold">Welcome to Firebase Studio</h1>
-    </main>
+      <Suspense>
+        <LandingPage />
+      </Suspense>
   );
 }
