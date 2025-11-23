@@ -44,3 +44,4 @@ This project uses the following technologies:
 - **[ShadCN UI](https://ui.shadcn.com/)**: A collection of re-usable components.
 - **[TypeScript](https://www.typescriptlang.org/)**: A typed superset of JavaScript.
 - **[Genkit](https://firebase.google.com/docs/genkit)**: An open-source framework for building AI-powered applications.
+
