@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { LoginDialog } from "@/components/auth/login-dialog";
 import { InteractiveBackground } from "@/components/landing/interactive-background";
 import { Badge } from "@/components/ui/badge";
-import { EnterpriseSalesDialog } from "@/components/dashboard/enterprise-sales-dialog";
+// import { EnterpriseSalesDialog } from "@/components/dashboard/enterprise-sales-dialog";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HeaderLoginDialog } from "@/components/auth/header-login-dialog";
@@ -537,11 +537,11 @@ export default function LandingPage() {
                                 Create Account
                             </Button>
                         </HeaderLoginDialog>
-                        <EnterpriseSalesDialog>
+                        {/* <EnterpriseSalesDialog>
                             <Button variant="link" size="lg" className="text-lg btn-press">
                                 Help My Digital Journey
                             </Button>
-                        </EnterpriseSalesDialog>
+                        </EnterpriseSalesDialog> */}
                     </div>
                 </div>
             </AnimatedSection>
