@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cd smartrefill && npm run dev",
-    "build": "cd smartrefill && npm run build",
-    "start": "cd smartrefill && npm start",
-    "lint": "cd smartrefill && npm run lint"
+    "dev": "npm run dev --prefix smartrefill",
+    "build": "npm run build --prefix smartrefill",
+    "start": "npm run start --prefix smartrefill",
+    "lint": "npm run lint --prefix smartrefill"
   }
 }
