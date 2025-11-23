@@ -6,21 +6,21 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { User, Lock, Mail, Eye, EyeOff, XCircle } from 'lucide-react';
-import { getInitializedFirebase } from '@/lib/firebase';
-import { 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    updateProfile,
-    GoogleAuthProvider,
-    signInWithRedirect,
-} from 'firebase/auth';
-import { FirebaseError } from 'firebase/app';
+// import { getInitializedFirebase } from '@/lib/firebase';
+// import { 
+//     createUserWithEmailAndPassword, 
+//     signInWithEmailAndPassword, 
+//     updateProfile,
+//     GoogleAuthProvider,
+//     signInWithRedirect,
+// } from 'firebase/auth';
+// import { FirebaseError } from 'firebase/app';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getFirebaseAuthUrl } from '@/app/actions/gmail-integration-action';
-import { handleSendVerificationEmail } from '@/app/actions/send-verification-action';
+// import { getFirebaseAuthUrl } from '@/app/actions/gmail-integration-action';
+// import { handleSendVerificationEmail } from '@/app/actions/send-verification-action';
 
 const GoogleIcon = () => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -62,66 +62,66 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
   const handleAuthError = (error: unknown, defaultTitle: string) => {
     let description = 'An unexpected error occurred. Please try again.';
       
-    if (error instanceof FirebaseError) {
-      switch (error.code) {
-        case 'auth/too-many-requests':
-          description = "Access to this account has been temporarily disabled due to many failed login attempts. Please wait a moment before trying again.";
-          break;
-        case 'auth/email-already-in-use':
-          description = 'This email is already registered. Please log in instead.';
-          setIsLogin(true);
-          break;
-        case 'auth/weak-password':
-          description = 'The password is too weak. It must be at least 6 characters long.';
-          break;
-        case 'auth/invalid-email':
-          description = 'Please enter a valid email address.';
-          break;
-        case 'auth/invalid-credential':
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          description = 'Invalid email or password. Please check your credentials and try again.';
-          break;
-        case 'permission-denied':
-           description = "Permission denied. Please check your Firestore security rules in the Firebase console.";
-           break;
-        case 'auth/popup-closed-by-user':
-            description = "The sign-in window was closed. Please try again.";
-            break;
-        case 'auth/account-exists-with-different-credential':
-            description = "An account already exists with this email address. Please sign in with the original method.";
-            break;
-        case 'auth/app-check-token-is-invalid':
-          description = 'App verification failed. If this is a development environment, please ensure you have set up a debug token in the Firebase console.';
-          break;
-        case 'auth/unauthorized-domain':
-            description = "This domain is not authorized for OAuth operations. Please add it to the list of authorized domains in the Firebase Console.";
-            break;
-        default:
-          description = "An internal error has occurred. Please check your App Check and reCAPTCHA keys."; 
-          break;
-      }
-    } else {
-      console.error("Unknown Authentication Error:", error);
-    }
+    // if (error instanceof FirebaseError) {
+    //   switch (error.code) {
+    //     case 'auth/too-many-requests':
+    //       description = "Access to this account has been temporarily disabled due to many failed login attempts. Please wait a moment before trying again.";
+    //       break;
+    //     case 'auth/email-already-in-use':
+    //       description = 'This email is already registered. Please log in instead.';
+    //       setIsLogin(true);
+    //       break;
+    //     case 'auth/weak-password':
+    //       description = 'The password is too weak. It must be at least 6 characters long.';
+    //       break;
+    //     case 'auth/invalid-email':
+    //       description = 'Please enter a valid email address.';
+    //       break;
+    //     case 'auth/invalid-credential':
+    //     case 'auth/user-not-found':
+    //     case 'auth/wrong-password':
+    //       description = 'Invalid email or password. Please check your credentials and try again.';
+    //       break;
+    //     case 'permission-denied':
+    //        description = "Permission denied. Please check your Firestore security rules in the Firebase console.";
+    //        break;
+    //     case 'auth/popup-closed-by-user':
+    //         description = "The sign-in window was closed. Please try again.";
+    //         break;
+    //     case 'auth/account-exists-with-different-credential':
+    //         description = "An account already exists with this email address. Please sign in with the original method.";
+    //         break;
+    //     case 'auth/app-check-token-is-invalid':
+    //       description = 'App verification failed. If this is a development environment, please ensure you have set up a debug token in the Firebase console.';
+    //       break;
+    //     case 'auth/unauthorized-domain':
+    //         description = "This domain is not authorized for OAuth operations. Please add it to the list of authorized domains in the Firebase Console.";
+    //         break;
+    //     default:
+    //       description = "An internal error has occurred. Please check your App Check and reCAPTCHA keys."; 
+    //       break;
+    //   }
+    // } else {
+    //   console.error("Unknown Authentication Error:", error);
+    // }
     
     toast({ variant: 'destructive', title: defaultTitle, description });
   }
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    const result = await getFirebaseAuthUrl();
-    if (result.url) {
-      // Redirect the user to the generated Google Auth URL.
-      window.location.href = result.url;
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Google Sign-In Failed",
-        description: result.error || "Could not prepare Google Sign-In. Please try again.",
-      });
-      setLoading(false);
-    }
+    // setLoading(true);
+    // const result = await getFirebaseAuthUrl();
+    // if (result.url) {
+    //   // Redirect the user to the generated Google Auth URL.
+    //   window.location.href = result.url;
+    // } else {
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Google Sign-In Failed",
+    //     description: result.error || "Could not prepare Google Sign-In. Please try again.",
+    //   });
+    //   setLoading(false);
+    // }
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -129,50 +129,50 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
     setLoading(true);
     setPasswordError('');
 
-    try {
-      const { auth } = await getInitializedFirebase();
+    // try {
+    //   const { auth } = await getInitializedFirebase();
 
-      if (!isLogin) {
-        // --- SIGN UP LOGIC ---
-        const passErr = validatePassword(password);
-        if (passErr) {
-          setPasswordError(passErr);
-          toast({ variant: 'destructive', title: 'Invalid Password', description: passErr });
-          setLoading(false);
-          return;
-        }
+    //   if (!isLogin) {
+    //     // --- SIGN UP LOGIC ---
+    //     const passErr = validatePassword(password);
+    //     if (passErr) {
+    //       setPasswordError(passErr);
+    //       toast({ variant: 'destructive', title: 'Invalid Password', description: passErr });
+    //       setLoading(false);
+    //       return;
+    //     }
 
-        if (password !== confirmPassword) {
-            toast({ variant: 'destructive', title: 'Passwords Do Not Match', description: 'Please re-enter your password.' });
-            setLoading(false);
-            return;
-        }
+    //     if (password !== confirmPassword) {
+    //         toast({ variant: 'destructive', title: 'Passwords Do Not Match', description: 'Please re-enter your password.' });
+    //         setLoading(false);
+    //         return;
+    //     }
 
-        if (!fullName) {
-          toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out your full name.' });
-          setLoading(false);
-          return;
-        }
+    //     if (!fullName) {
+    //       toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out your full name.' });
+    //       setLoading(false);
+    //       return;
+    //     }
         
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: fullName });
+    //     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    //     await updateProfile(userCredential.user, { displayName: fullName });
         
-        // **FIX**: Call the centralized server action to send the verification email.
-        await handleSendVerificationEmail(email, fullName);
+    //     // **FIX**: Call the centralized server action to send the verification email.
+    //     await handleSendVerificationEmail(email, fullName);
         
-        toast({ title: 'Almost there!', description: 'Please check your inbox to verify your email.' });
-        handleAuthSuccess(); // Allow user to proceed to dashboard immediately
+    //     toast({ title: 'Almost there!', description: 'Please check your inbox to verify your email.' });
+    //     handleAuthSuccess(); // Allow user to proceed to dashboard immediately
 
-      } else {
-        // --- LOGIN LOGIC ---
-        await signInWithEmailAndPassword(auth, email, password);
-        handleAuthSuccess();
-      }
-    } catch (error) {
-      handleAuthError(error, isLogin ? 'Sign-in Failed' : 'Sign-up Failed');
-    } finally {
-      setLoading(false);
-    }
+    //   } else {
+    //     // --- LOGIN LOGIC ---
+    //     await signInWithEmailAndPassword(auth, email, password);
+    //     handleAuthSuccess();
+    //   }
+    // } catch (error) {
+    //   handleAuthError(error, isLogin ? 'Sign-in Failed' : 'Sign-up Failed');
+    // } finally {
+    //   setLoading(false);
+    // }
   };
   
 
