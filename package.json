@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 9002",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -35,10 +35,12 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.1.5",
+    "firebase": "^12.6.0",
     "framer-motion": "^11.2.11",
     "genkit": "^1.0.0",
     "lucide-react": "^0.395.0",
     "next": "14.2.4",
+    "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
     "react": "^18",
     "react-day-picker": "^8.10.1",

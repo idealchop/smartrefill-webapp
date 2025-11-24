@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Loader2, Bot, FileText, Droplets, Star, User, MapPin, Download, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { handleProcessLedgerImage } from "@/app/actions/process-ledger-image-action";
-import { handleProcessLedgerText } from "@/app/actions/process-ledger-text-action";
+import { handleProcessLedgerImage } from "@/actions/process-ledger-image-action";
+import { handleProcessLedgerText } from "@/actions/process-ledger-text-action";
 import type { ProcessLedgerImageOutput } from "@/ai/flows/process-ledger-image";
 import { format, addDays } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -41,20 +41,22 @@ const sampleMessages = [
 const HighlightedText = ({ text, spans }: { text: string, spans?: ExtractedTransaction['extractedSpans'] }) => {
     if (!spans || Object.keys(spans).length === 0) return <>{text}</>;
 
-    const allSpans = Object.values(spans).filter(Boolean).sort((a, b) => a!.startIndex - b!.startIndex);
+    const allSpans = Object.values(spans).filter(Boolean).sort((a, b) => (a?.startIndex ?? 0) - (b?.startIndex ?? 0));
     let lastIndex = 0;
     const parts = [];
 
     allSpans.forEach((span, i) => {
-        if (span!.startIndex > lastIndex) {
-            parts.push(<span key={`text-${i}`}>{text.substring(lastIndex, span!.startIndex)}</span>);
+        if (span && span.startIndex > lastIndex) {
+            parts.push(<span key={`text-${i}`}>{text.substring(lastIndex, span.startIndex)}</span>);
         }
-        parts.push(
-            <span key={`span-${i}`} className="bg-primary/20 text-primary font-medium rounded-sm px-1 py-0.5">
-                {text.substring(span!.startIndex, span!.endIndex)}
-            </span>
-        );
-        lastIndex = span!.endIndex;
+        if (span) {
+            parts.push(
+                <span key={`span-${i}`} className="bg-primary/20 text-primary font-medium rounded-sm px-1 py-0.5">
+                    {text.substring(span.startIndex, span.endIndex)}
+                </span>
+            );
+            lastIndex = span.endIndex;
+        }
     });
 
     if (lastIndex < text.length) {

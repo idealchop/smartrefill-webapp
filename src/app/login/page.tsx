@@ -1,127 +1,60 @@
 
 'use client';
-import { useState, useEffect, Suspense } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
-import { getInitializedFirebase } from '@/lib/firebase';
+import { Loader2, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { pageConfig, titles, subtitles, switchModeText, LOADER_CLASS } from './constants';
+import { STRINGS } from '@/components/auth/constants';
 
 function LoginContent() {
     const [isLogin, setIsLogin] = useState(true);
     const { toast } = useToast();
     const searchParams = useSearchParams();
     const router = useRouter();
-    const [authLoading, setAuthLoading] = useState(true);
-
-    // This effect runs once on component mount to handle various auth-related side effects.
-    useEffect(() => {
-        const { auth } = getInitializedFirebase();
-
-        // 1. Handle redirect result from Google Sign-In
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result) {
-                    // This means the user has just been redirected from Google.
-                    const user = result.user;
-                    toast({
-                        title: `Welcome, ${user.displayName}!`,
-                        description: "You've successfully signed in.",
-                    });
-                    router.push('/dashboard');
-                } else {
-                    // This means the user landed on the page without a redirect result,
-                    // so we proceed with other checks.
-                    setAuthLoading(false);
-                }
-            })
-            .catch((error) => {
-                console.error("Redirect Result Error:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Google Sign-In Failed",
-                    description: "Could not complete sign-in. Please try again.",
-                });
-                setAuthLoading(false);
-            });
-
-        // 2. Handle manual logout message
-        const logoutMessage = localStorage.getItem('logout_message');
-        if (logoutMessage) {
-            toast({
-                title: "Logged Out",
-                description: logoutMessage,
-                icon: <CheckCircle className="h-5 w-5 text-green-500" />,
-            });
-            localStorage.removeItem('logout_message');
-        }
-
-        // 3. Handle email verification message
-        const verified = searchParams.get('verified');
-        if (verified === 'true') {
-            toast({
-                title: "Email Verified!",
-                description: "Your email address has been successfully verified. You can now log in.",
-                duration: 5000,
-            });
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const [authLoading, setAuthLoading] = useState(false);
 
     if (authLoading) {
       return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <div className="flex h-screen w-full items-center justify-center bg-background/80">
+            <Loader2 className={LOADER_CLASS} />
         </div>
       )
     }
   
     return (
-        <div className="relative min-h-screen w-full">
-            <Image
-                src="https://firebasestorage.googleapis.com/v0/b/smartrefill-singapore/o/App-Image%2FPhilippines-water-refilling-stations.jpg?alt=media&token=44b40476-31f0-4ef4-aa83-b7290457a21d"
-                alt="Background"
-                fill
-                className="object-cover"
-                priority
-            />
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm" />
-            <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-                <div className="w-full max-w-md">
-                    <Card className="p-8 shadow-lg bg-background/90">
-                        <CardHeader className="text-center items-center p-0 mb-6">
-                                <>
-                                    <Image src="https://firebasestorage.googleapis.com/v0/b/smartrefill-singapore/o/Brand%20Logo%2FAsset%2022.png?alt=media&token=f7458efe-afd7-4006-862e-40c8d524c080" alt="Smart Refill Logo" width={40} height={40} className="mb-2" />
-                                    <CardTitle className="text-2xl sm:text-3xl font-bold font-headline">
-                                        {isLogin ? 'Welcome Back' : 'Create Account'}
-                                    </CardTitle>
-                                    <CardDescription className="max-w-xs text-center">
-                                        {isLogin ? 'Your dashboard is ready for you.' : 'Create an account to run your refilling station smarter for free.'}
-                                    </CardDescription>
-                                </>
-                        </CardHeader>
-                        
-                        <LoginForm isLogin={isLogin} setIsLogin={setIsLogin} />
-  
-                        <div className="mt-6 text-center text-sm">
-                            <p className="text-muted-foreground">{isLogin ? "Don't have an account?" : "Already have an account?"}</p>
-                            <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="font-bold">
-                                {isLogin ? "Create Account" : 'Log In'}
+        <div className="relative min-h-screen w-full bg-background/80 flex items-center justify-center p-4">
+            <div className="w-full max-w-md">
+                <Card className="relative p-8 shadow-xl bg-background rounded-3xl">
+                    <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-8 w-8 rounded-full">
+                        <X className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                    <CardHeader className="text-center items-center p-0 mb-6">
+                        <Image src={STRINGS.logoUrl} alt={STRINGS.logoAlt} width={40} height={40} className="mb-4" />
+                        <CardTitle className="text-3xl sm:text-4xl font-bold font-headline">
+                            {isLogin ? titles.login : titles.create}
+                        </CardTitle>
+                        <CardDescription className="max-w-xs text-center mt-2 text-base text-muted-foreground">
+                            {isLogin ? subtitles.login : subtitles.create}
+                        </CardDescription>
+                    </CardHeader>
+                    
+                    <LoginForm isLogin={isLogin} setIsLogin={setIsLogin} />
+
+                    <div className="mt-6 text-center text-sm">
+                        <p className="text-muted-foreground">
+                            {isLogin ? switchModeText.login.prompt : switchMode-text.create.prompt}
+                            <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="font-bold text-base text-primary">
+                                {isLogin ? switchModeText.login.action : switchModeText.create.action}
                             </Button>
-                        </div>
-  
-                        <div className="text-center mt-4">
-                            <Link href="/" className="text-xs text-muted-foreground hover:text-primary hover:underline">
-                                &larr; Back to Home
-                            </Link>
-                        </div>
-                    </Card>
-                </div>
+                        </p>
+                    </div>
+                </Card>
             </div>
         </div>
     );
@@ -129,7 +62,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className={LOADER_CLASS} /></div>}>
       <LoginContent />
     </Suspense>
   );

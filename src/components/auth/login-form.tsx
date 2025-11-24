@@ -5,22 +5,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { User, Lock, Mail, Eye, EyeOff, XCircle } from 'lucide-react';
-// import { getInitializedFirebase } from '@/lib/firebase';
-// import { 
-//     createUserWithEmailAndPassword, 
-//     signInWithEmailAndPassword, 
-//     updateProfile,
-//     GoogleAuthProvider,
-//     signInWithRedirect,
-// } from 'firebase/auth';
-// import { FirebaseError } from 'firebase/app';
+import { User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Image from 'next/image';
 import Link from 'next/link';
-// import { getFirebaseAuthUrl } from '@/app/actions/gmail-integration-action';
-// import { handleSendVerificationEmail } from '@/app/actions/send-verification-action';
+import { STRINGS, URLS, iconClass, iconClassPlacement } from './constants';
+import { signIn } from 'next-auth/react';
 
 const GoogleIcon = () => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -50,78 +39,37 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
   const [passwordError, setPasswordError] = useState('');
   
   const validatePassword = (pass: string) => {
-    if (pass.length < 6) return 'Password must be at least 6 characters.';
+    if (pass.length < 6) return STRINGS.passwordMinLength;
     return '';
   };
 
   const handleAuthSuccess = () => {
-    toast({ title: 'Success!', description: 'Redirecting to your dashboard...' });
-    router.push('/dashboard');
+    toast({ title: STRINGS.success, description: STRINGS.redirectingToDashboard });
+    router.push(URLS.dashboard);
   }
 
-  const handleAuthError = (error: unknown, defaultTitle: string) => {
-    let description = 'An unexpected error occurred. Please try again.';
-      
-    // if (error instanceof FirebaseError) {
-    //   switch (error.code) {
-    //     case 'auth/too-many-requests':
-    //       description = "Access to this account has been temporarily disabled due to many failed login attempts. Please wait a moment before trying again.";
-    //       break;
-    //     case 'auth/email-already-in-use':
-    //       description = 'This email is already registered. Please log in instead.';
-    //       setIsLogin(true);
-    //       break;
-    //     case 'auth/weak-password':
-    //       description = 'The password is too weak. It must be at least 6 characters long.';
-    //       break;
-    //     case 'auth/invalid-email':
-    //       description = 'Please enter a valid email address.';
-    //       break;
-    //     case 'auth/invalid-credential':
-    //     case 'auth/user-not-found':
-    //     case 'auth/wrong-password':
-    //       description = 'Invalid email or password. Please check your credentials and try again.';
-    //       break;
-    //     case 'permission-denied':
-    //        description = "Permission denied. Please check your Firestore security rules in the Firebase console.";
-    //        break;
-    //     case 'auth/popup-closed-by-user':
-    //         description = "The sign-in window was closed. Please try again.";
-    //         break;
-    //     case 'auth/account-exists-with-different-credential':
-    //         description = "An account already exists with this email address. Please sign in with the original method.";
-    //         break;
-    //     case 'auth/app-check-token-is-invalid':
-    //       description = 'App verification failed. If this is a development environment, please ensure you have set up a debug token in the Firebase console.';
-    //       break;
-    //     case 'auth/unauthorized-domain':
-    //         description = "This domain is not authorized for OAuth operations. Please add it to the list of authorized domains in the Firebase Console.";
-    //         break;
-    //     default:
-    //       description = "An internal error has occurred. Please check your App Check and reCAPTCHA keys."; 
-    //       break;
-    //   }
-    // } else {
-    //   console.error("Unknown Authentication Error:", error);
-    // }
+  const handleAuthError = (error: any, defaultTitle: string) => {
+    let description = STRINGS.unexpectedError;
+    if (error instanceof Error) {
+      description = error.message;
+    }
     
     toast({ variant: 'destructive', title: defaultTitle, description });
   }
 
   const handleGoogleSignIn = async () => {
-    // setLoading(true);
-    // const result = await getFirebaseAuthUrl();
-    // if (result.url) {
-    //   // Redirect the user to the generated Google Auth URL.
-    //   window.location.href = result.url;
-    // } else {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Google Sign-In Failed",
-    //     description: result.error || "Could not prepare Google Sign-In. Please try again.",
-    //   });
-    //   setLoading(false);
-    // }
+    setLoading(true);
+    try {
+      const result = await signIn('google', { redirect: false });
+      if (result?.error) {
+        handleAuthError(new Error(result.error), STRINGS.googleSignInFailed);
+      } else {
+        handleAuthSuccess();
+      }
+    } catch (error) {
+      handleAuthError(error, STRINGS.googleSignInFailed);
+    }
+    setLoading(false);
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -129,64 +77,51 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
     setLoading(true);
     setPasswordError('');
 
-    // try {
-    //   const { auth } = await getInitializedFirebase();
+    if (!isLogin && password !== confirmPassword) {
+      setPasswordError(STRINGS.passwordsDoNotMatch);
+      setLoading(false);
+      return;
+    }
 
-    //   if (!isLogin) {
-    //     // --- SIGN UP LOGIC ---
-    //     const passErr = validatePassword(password);
-    //     if (passErr) {
-    //       setPasswordError(passErr);
-    //       toast({ variant: 'destructive', title: 'Invalid Password', description: passErr });
-    //       setLoading(false);
-    //       return;
-    //     }
+    if (!isLogin && !fullName) {
+      setPasswordError(STRINGS.pleaseFillFullName);
+      setLoading(false);
+      return;
+    }
 
-    //     if (password !== confirmPassword) {
-    //         toast({ variant: 'destructive', title: 'Passwords Do Not Match', description: 'Please re-enter your password.' });
-    //         setLoading(false);
-    //         return;
-    //     }
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        action: isLogin ? 'login' : 'signup',
+        fullName,
+        email,
+        password,
+      });
 
-    //     if (!fullName) {
-    //       toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out your full name.' });
-    //       setLoading(false);
-    //       return;
-    //     }
-        
-    //     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    //     await updateProfile(userCredential.user, { displayName: fullName });
-        
-    //     // **FIX**: Call the centralized server action to send the verification email.
-    //     await handleSendVerificationEmail(email, fullName);
-        
-    //     toast({ title: 'Almost there!', description: 'Please check your inbox to verify your email.' });
-    //     handleAuthSuccess(); // Allow user to proceed to dashboard immediately
+      if (result?.error) {
+        handleAuthError(new Error(result.error), isLogin ? STRINGS.signInFailed : STRINGS.signUpFailed);
+      } else {
+        handleAuthSuccess();
+      }
+    } catch (error) {
+      handleAuthError(error, isLogin ? STRINGS.signInFailed : STRINGS.signUpFailed);
+    }
 
-    //   } else {
-    //     // --- LOGIN LOGIC ---
-    //     await signInWithEmailAndPassword(auth, email, password);
-    //     handleAuthSuccess();
-    //   }
-    // } catch (error) {
-    //   handleAuthError(error, isLogin ? 'Sign-in Failed' : 'Sign-up Failed');
-    // } finally {
-    //   setLoading(false);
-    // }
+    setLoading(false);
   };
   
 
   const renderSignUpForm = () => {
       return (
             <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input id="fullName" type="text" placeholder="Your Full Name" className="pl-10 h-11" value={fullName} onChange={(e) => setFullName(e.target.value)} required={!isLogin} disabled={loading} />
+                <User className={`${iconClass} ${iconClassPlacement}`} />
+                <Input id="fullName" type="text" placeholder={STRINGS.fullNamePlaceholder} className="pl-10 h-12 rounded-lg border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required={!isLogin} disabled={loading} />
             </div>
       )
   }
 
   return (
-    <div className="w-full shadow-none border-none rounded-lg px-6 sm:px-8 pt-6">
+    <div className="w-full px-4 sm:px-0">
       <form onSubmit={handleEmailAuth} className="space-y-4">
         {!isLogin && (
           <div className="space-y-4">
@@ -194,12 +129,12 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
           </div>
         )}
         <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Mail className={`${iconClass} ${iconClassPlacement}`} />
             <Input 
                 id="email" 
                 type="email" 
-                placeholder="Email Address" 
-                className="pl-10 h-11"
+                placeholder={STRINGS.emailPlaceholder} 
+                className="pl-10 h-12 rounded-lg border-2"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -207,12 +142,12 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
             />
         </div>
         <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Lock className={`${iconClass} ${iconClassPlacement}`} />
             <Input 
                 id="password" 
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="pl-10 h-11 pr-10"
+                placeholder={STRINGS.passwordPlaceholder}
+                className="pl-10 h-12 pr-10 rounded-lg border-2"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -230,20 +165,20 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
               disabled={loading}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400" />
+                <EyeOff className={iconClass} />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400" />
+                <Eye className={iconClass} />
               )}
             </button>
         </div>
         {!isLogin && (
             <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className={`${iconClass} ${iconClassPlacement}`} />
                 <Input 
                     id="confirmPassword" 
                     type={showPassword ? "text" : "password"}
-                    placeholder="Confirm Password"
-                    className="pl-10 h-11 pr-10"
+                    placeholder={STRINGS.confirmPasswordPlaceholder}
+                    className="pl-10 h-12 pr-10 rounded-lg border-2"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required={!isLogin}
@@ -253,16 +188,16 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
         )}
         {!isLogin && passwordError && <p className="text-xs text-destructive">{passwordError}</p>}
         {!isLogin && !passwordError && password.length > 0 && (
-             <p className="text-xs text-muted-foreground">Password must be at least 6 characters.</p>
+             <p className="text-xs text-muted-foreground">{STRINGS.passwordMinLength}</p>
         )}
 
         <Button 
             type="submit"
             disabled={loading}
-            className="w-full h-12 text-base"
+            className="w-full h-12 text-base font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             size="lg"
         >
-            {loading ? 'Processing...' : (isLogin ? 'Log In' : 'Create Account')}
+            {loading ? STRINGS.processing : (isLogin ? STRINGS.login : STRINGS.createAccount)}
         </Button>
       </form>
       
@@ -272,24 +207,24 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
             </div>
             <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
+                    {STRINGS.continueWith}
                 </span>
             </div>
         </div>
 
-        <Button variant="outline" className="w-full h-12" onClick={handleGoogleSignIn} disabled={loading}>
+        <Button variant="outline" className="w-full h-12 text-base font-semibold rounded-lg border-2" onClick={handleGoogleSignIn} disabled={loading}>
             <GoogleIcon />
-            <span className="ml-2">Continue with Google</span>
+            <span className="ml-2 text-foreground">{STRINGS.continueWithGoogle}</span>
         </Button>
       
       <p className="mt-6 px-0 text-center text-xs text-muted-foreground">
         By continuing, you agree to our{" "}
-        <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
-            Terms of Service
+        <Link href={URLS.terms} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+            {STRINGS.termsOfService}
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
-            Privacy Policy
+        <Link href={URLS.privacy} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+            {STRINGS.privacyPolicy}
         </Link>.
       </p>
     </div>
