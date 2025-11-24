@@ -4,65 +4,58 @@
 
 const RIVER_MICROSERVICE_URL = process.env.RIVER_MICROSERVICE_URL || "http://localhost:5000";
 
+// Helper function to simulate API calls
+const simulateApiCall = (data: any, success: boolean = true) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (success) {
+        resolve(data);
+      } else {
+        reject(new Error("Simulated API Error: Invalid credentials"));
+      }
+    }, 500);
+  });
+};
+
 export const riverBFF = {
   signup: async (fullName: string, email: string, password: string) => {
-    // In a real-world scenario, this would make an API call to the river-microservice
     console.log("Calling river-microservice to sign up user:", { fullName, email, password });
 
-    // Simulate an API call
-    const response = await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ok: true,
-          json: () => Promise.resolve({
-            id: "123",
-            fullName,
-            email,
-          }),
-        });
-      }, 1000);
-    });
+    // Simulate a failure case for testing purposes
+    if (password === "fail-test") {
+      return simulateApiCall({}, false);
+    }
 
-    return response;
+    console.log("Storing user information in Firestore via river-microservice.");
+    console.log(`Sending verification email to ${email}.`);
+    
+    // On success, this should return the user object from your microservice
+    return simulateApiCall({
+      id: "123",
+      fullName,
+      email,
+    });
   },
+
   login: async (email: string, password: string) => {
-    // In a real-world scenario, this would make an API call to the river-microservice
     console.log("Calling river-microservice to log in user:", { email, password });
 
-    // Simulate an API call
-    const response = await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ok: true,
-          json: () => Promise.resolve({
-            id: "123",
-            email,
-          }),
-        });
-      }, 1000);
+    // On success, this should return the user object from your microservice
+    return simulateApiCall({
+      id: "123",
+      email,
     });
-
-    return response;
   },
-  google: async(email: string, name: string, image: string, accessToken: string) => {
-    // In a real-world scenario, this would make an API call to the river-microservice
-    console.log("Calling river-microservice to log in user:", { email, name, image, accessToken });
 
-    // Simulate an API call
-    const response = await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ok: true,
-          json: () => Promise.resolve({
-            id: "123",
-            email,
-            name,
-            image
-          }),
-        });
-      }, 1000);
+  google: async(email: string, name: string | null | undefined, image: string | null | undefined, accessToken: string) => {
+    console.log("Calling river-microservice for Google sign-in:", { email, name, image, accessToken });
+
+    // On success, this should return the user object from your microservice
+    return simulateApiCall({
+      id: "123",
+      email,
+      name,
+      image
     });
-
-    return response;
   }
 };

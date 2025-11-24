@@ -1,60 +1,72 @@
 
 'use client';
+import { useState, useEffect, Suspense } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
-import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
-import { pageConfig, titles, subtitles, switchModeText, LOADER_CLASS } from './constants';
-import { STRINGS } from '@/components/auth/constants';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+
 
 function LoginContent() {
     const [isLogin, setIsLogin] = useState(true);
     const { toast } = useToast();
     const searchParams = useSearchParams();
     const router = useRouter();
-    const [authLoading, setAuthLoading] = useState(false);
+    const [authLoading, setAuthLoading] = useState(true);
 
     if (authLoading) {
       return (
-        <div className="flex h-screen w-full items-center justify-center bg-background/80">
-            <Loader2 className={LOADER_CLASS} />
+        <div className="flex h-screen w-full items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       )
     }
   
     return (
-        <div className="relative min-h-screen w-full bg-background/80 flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                <Card className="relative p-8 shadow-xl bg-background rounded-3xl">
-                    <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-8 w-8 rounded-full">
-                        <X className="h-5 w-5 text-muted-foreground" />
-                    </Button>
-                    <CardHeader className="text-center items-center p-0 mb-6">
-                        <Image src={STRINGS.logoUrl} alt={STRINGS.logoAlt} width={40} height={40} className="mb-4" />
-                        <CardTitle className="text-3xl sm:text-4xl font-bold font-headline">
-                            {isLogin ? titles.login : titles.create}
-                        </CardTitle>
-                        <CardDescription className="max-w-xs text-center mt-2 text-base text-muted-foreground">
-                            {isLogin ? subtitles.login : subtitles.create}
-                        </CardDescription>
-                    </CardHeader>
-                    
-                    <LoginForm isLogin={isLogin} setIsLogin={setIsLogin} />
-
-                    <div className="mt-6 text-center text-sm">
-                        <p className="text-muted-foreground">
-                            {isLogin ? switchModeText.login.prompt : switchMode-text.create.prompt}
-                            <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="font-bold text-base text-primary">
-                                {isLogin ? switchModeText.login.action : switchModeText.create.action}
+        <div className="relative min-h-screen w-full">
+            <Image
+                src="https://firebasestorage.googleapis.com/v0/b/smartrefill-singapore/o/App-Image%2FPhilippines-water-refilling-stations.jpg?alt=media&token=44b40476-31f0-4ef4-aa83-b7290457a21d"
+                alt="Background"
+                fill
+                className="object-cover"
+                priority
+            />
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm" />
+            <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <Card className="p-8 shadow-lg bg-background/90">
+                        <CardHeader className="text-center items-center p-0 mb-6">
+                                <>
+                                    <Image src="https://firebasestorage.googleapis.com/v0/b/smartrefill-singapore/o/Brand%20Logo%2FAsset%2022.png?alt=media&token=f7458efe-afd7-4006-862e-40c8d524c080" alt="Smart Refill Logo" width={40} height={40} className="mb-2" />
+                                    <CardTitle className="text-2xl sm:text-3xl font-bold font-headline">
+                                        {isLogin ? 'Welcome Back' : 'Create Account'}
+                                    </CardTitle>
+                                    <CardDescription className="max-w-xs text-center">
+                                        {isLogin ? 'Your dashboard is ready for you.' : 'Create an account to run your refilling station smarter for free.'}
+                                    </CardDescription>
+                                </>
+                        </CardHeader>
+                        
+                        <LoginForm isLogin={isLogin} setIsLogin={setIsLogin} />
+  
+                        <div className="mt-6 text-center text-sm">
+                            <p className="text-muted-foreground">{isLogin ? "Don't have an account?" : "Already have an account?"}</p>
+                            <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="font-bold">
+                                {isLogin ? "Create Account" : 'Log In'}
                             </Button>
-                        </p>
-                    </div>
-                </Card>
+                        </div>
+  
+                        <div className="text-center mt-4">
+                            <Link href="/" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+                                &larr; Back to Home
+                            </Link>
+                        </div>
+                    </Card>
+                </div>
             </div>
         </div>
     );
@@ -62,7 +74,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className={LOADER_CLASS} /></div>}>
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
       <LoginContent />
     </Suspense>
   );

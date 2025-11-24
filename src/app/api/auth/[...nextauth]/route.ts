@@ -1,14 +1,21 @@
 
-import NextAuth from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { riverBFF } from "@/lib/river-bff"
+import NextAuth, { NextAuthOptions, User } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { riverBFF } from "@/lib/river-bff";
 
-export const authOptions = {
+// Define a type for the user object returned by your BFF
+interface BffUser {
+  id: string;
+  email: string;
+  fullName?: string;
+}
+
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -18,7 +25,7 @@ export const authOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials): Promise<User | null> {
         if (!credentials) {
           return null;
         }
@@ -26,79 +33,72 @@ export const authOptions = {
         const { action, email, password, fullName } = credentials;
 
         try {
-          let res;
+          let bffUser: BffUser | null = null;
           if (action === 'signup') {
-            res = await riverBFF.signup(fullName || '', email, password);
+            bffUser = await riverBFF.signup(fullName || '', email, password) as BffUser;
           } else {
-            res = await riverBFF.login(email, password);
+            bffUser = await riverBFF.login(email, password) as BffUser;
           }
-          // @ts-ignore
-          if (!res.ok) {
-             // @ts-ignore
-            const error = await res.json();
-            throw new Error(error.message || (action === 'signup' ? 'Signup failed' : 'Login failed'));
+          
+          if (bffUser) {
+            const user: User = {
+              id: bffUser.id,
+              email: bffUser.email,
+              name: bffUser.fullName || bffUser.email,
+            };
+            return user;
           }
-           // @ts-ignore
-          const user = await res.json();
-          return user;
-
+          
+          return null;
         } catch (error: any) {
-          console.error(error);
-          throw new Error(error.message);
+          console.error("Authorization Error:", error.message);
+          return null;
         }
       }
     })
   ],
+  session: {
+    strategy: "jwt",
+  },
   pages: {
     signIn: '/login',
-    error: '/login', // Redirect to login page on error.
+    error: '/login',
   },
   callbacks: {
-    async jwt({ token, user, account }) {
-      if (account && user) {
-        token.accessToken = account.access_token;
-        // @ts-ignore
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          if (!user.email || !user.name || !account.access_token) return false;
+
+          const bffUser = await riverBFF.google(
+            user.email,
+            user.name,
+            user.image,
+            account.access_token
+          );
+          
+          return !!bffUser;
+        } catch (error) {
+          console.error('Google Sign-In Error:', error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
         token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // @ts-ignore
         session.user.id = token.id;
       }
-      // @ts-ignore
-      session.accessToken = token.accessToken;
       return session;
     },
-    async signIn({ user, account, profile }) {
-      if (account?.provider === 'google') {
-        try {
-          const res = await riverBFF.google(
-            user.email!,
-            user.name!,
-            user.image!,
-            account.access_token!
-          );
-            // @ts-ignore
-          if (!res.ok) {
-            throw new Error('Google sign-in failed on the BFF side.');
-          }
-          
-           // @ts-ignore
-          const bffUser = await res.json();
-          Object.assign(user, bffUser);
-
-          return true; 
-        } catch (error) {
-          console.error('Google Sign-In Error:', error);
-          return false; 
-        }
-      }
-      return true; 
-    },
-  }
-}
+  },
+};
 
 const handler = NextAuth(authOptions);
 

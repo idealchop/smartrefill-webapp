@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Manrope } from "next/font/google";
 import './globals.css';
 import { ClientProviders } from '@/app/client-providers';
@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Smart Refill PH', url: 'https://smartrefill.io' }],
   creator: 'Smart Refill PH',
   manifest: '/manifest.json',
+  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
   applicationName: 'Smart Refill',
   appleWebApp: {
     capable: true,
@@ -56,12 +57,6 @@ export const metadata: Metadata = {
     description: 'The all-in-one platform to grow your water refilling station business.',
     images: ['https://firebasestorage.googleapis.com/v0/b/smartrefill-singapore/o/App-Image%2Fwater-stations-main-dashboard.png?alt=media&token=397a8653-f6ba-4fc6-b2c1-2a86e5c53ab8'],
   },
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
 };
 
 const jsonLd = {

@@ -3,13 +3,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { STRINGS, URLS, iconClass, iconClassPlacement } from './constants';
+import { URLS, iconClass, iconClassPlacement } from './constants';
+import { STRINGS } from './strings';
 import { signIn } from 'next-auth/react';
+import { authSchema } from './schema';
+import type { z } from 'zod';
 
 const GoogleIcon = () => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,17 +36,20 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  
-  const validatePassword = (pass: string) => {
-    if (pass.length < 6) return STRINGS.passwordMinLength;
-    return '';
-  };
+
+  type AuthFormValues = z.infer<typeof authSchema>;
+
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      isLogin,
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    }
+  });
 
   const handleAuthSuccess = () => {
     toast({ title: STRINGS.success, description: STRINGS.redirectingToDashboard });
@@ -49,6 +57,7 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
   }
 
   const handleAuthError = (error: any, defaultTitle: string) => {
+    console.error("Authentication Error:", error);
     let description = STRINGS.unexpectedError;
     if (error instanceof Error) {
       description = error.message;
@@ -72,30 +81,15 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
     setLoading(false);
   };
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: AuthFormValues) => {
     setLoading(true);
-    setPasswordError('');
-
-    if (!isLogin && password !== confirmPassword) {
-      setPasswordError(STRINGS.passwordsDoNotMatch);
-      setLoading(false);
-      return;
-    }
-
-    if (!isLogin && !fullName) {
-      setPasswordError(STRINGS.pleaseFillFullName);
-      setLoading(false);
-      return;
-    }
-
     try {
       const result = await signIn('credentials', {
         redirect: false,
         action: isLogin ? 'login' : 'signup',
-        fullName,
-        email,
-        password,
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
       });
 
       if (result?.error) {
@@ -106,116 +100,58 @@ export function LoginForm({ isLogin, setIsLogin }: { isLogin: boolean, setIsLogi
     } catch (error) {
       handleAuthError(error, isLogin ? STRINGS.signInFailed : STRINGS.signUpFailed);
     }
-
     setLoading(false);
   };
-  
-
-  const renderSignUpForm = () => {
-      return (
-            <div className="relative">
-                <User className={`${iconClass} ${iconClassPlacement}`} />
-                <Input id="fullName" type="text" placeholder={STRINGS.fullNamePlaceholder} className="pl-10 h-12 rounded-lg border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required={!isLogin} disabled={loading} />
-            </div>
-      )
-  }
 
   return (
     <div className="w-full px-4 sm:px-0">
-      <form onSubmit={handleEmailAuth} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {!isLogin && (
-          <div className="space-y-4">
-            {renderSignUpForm()}
+          <div className="relative">
+            <User className={`${iconClass} ${iconClassPlacement}`} />
+            <Input id="fullName" type="text" placeholder={STRINGS.fullNamePlaceholder} className="pl-10 h-12 rounded-lg border-2" {...register('fullName')} disabled={loading} />
+            {errors.fullName && <p className="text-xs text-destructive">{errors.fullName.message}</p>}
           </div>
         )}
         <div className="relative">
             <Mail className={`${iconClass} ${iconClassPlacement}`} />
-            <Input 
-                id="email" 
-                type="email" 
-                placeholder={STRINGS.emailPlaceholder} 
-                className="pl-10 h-12 rounded-lg border-2"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-            />
+            <Input id="email" type="email" placeholder={STRINGS.emailPlaceholder} className="pl-10 h-12 rounded-lg border-2" {...register('email')} disabled={loading} />
+            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
         </div>
         <div className="relative">
             <Lock className={`${iconClass} ${iconClassPlacement}`} />
-            <Input 
-                id="password" 
-                type={showPassword ? "text" : "password"}
-                placeholder={STRINGS.passwordPlaceholder}
-                className="pl-10 h-12 pr-10 rounded-lg border-2"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (!isLogin) {
-                    setPasswordError(validatePassword(e.target.value));
-                  }
-                }}
-                required
-                disabled={loading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
-              disabled={loading}
-            >
-              {showPassword ? (
-                <EyeOff className={iconClass} />
-              ) : (
-                <Eye className={iconClass} />
-              )}
+            <Input id="password" type={showPassword ? "text" : "password"} placeholder={STRINGS.passwordPlaceholder} className="pl-10 h-12 pr-10 rounded-lg border-2" {...register('password')} disabled={loading} />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3" disabled={loading}>
+              {showPassword ? <EyeOff className={iconClass} /> : <Eye className={iconClass} />}
             </button>
+            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
         </div>
         {!isLogin && (
             <div className="relative">
                 <Lock className={`${iconClass} ${iconClassPlacement}`} />
-                <Input 
-                    id="confirmPassword" 
-                    type={showPassword ? "text" : "password"}
-                    placeholder={STRINGS.confirmPasswordPlaceholder}
-                    className="pl-10 h-12 pr-10 rounded-lg border-2"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required={!isLogin}
-                    disabled={loading}
-                />
+                <Input id="confirmPassword" type={showPassword ? "text" : "password"} placeholder={STRINGS.confirmPasswordPlaceholder} className="pl-10 h-12 pr-10 rounded-lg border-2" {...register('confirmPassword')} disabled={loading} />
+                 {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
             </div>
         )}
-        {!isLogin && passwordError && <p className="text-xs text-destructive">{passwordError}</p>}
-        {!isLogin && !passwordError && password.length > 0 && (
-             <p className="text-xs text-muted-foreground">{STRINGS.passwordMinLength}</p>
-        )}
 
-        <Button 
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 text-base font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-            size="lg"
-        >
+        <Button type="submit" disabled={loading} className="w-full h-12 text-base font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90" size="lg">
             {loading ? STRINGS.processing : (isLogin ? STRINGS.login : STRINGS.createAccount)}
         </Button>
       </form>
       
-        <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                    {STRINGS.continueWith}
-                </span>
-            </div>
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
         </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">{STRINGS.continueWith}</span>
+        </div>
+      </div>
 
-        <Button variant="outline" className="w-full h-12 text-base font-semibold rounded-lg border-2" onClick={handleGoogleSignIn} disabled={loading}>
-            <GoogleIcon />
-            <span className="ml-2 text-foreground">{STRINGS.continueWithGoogle}</span>
-        </Button>
+      <Button variant="outline" className="w-full h-12 text-base font-semibold rounded-lg border-2" onClick={handleGoogleSignIn} disabled={loading}>
+        <GoogleIcon />
+        <span className="ml-2 text-foreground">{STRINGS.continueWithGoogle}</span>
+      </Button>
       
       <p className="mt-6 px-0 text-center text-xs text-muted-foreground">
         By continuing, you agree to our{" "}
