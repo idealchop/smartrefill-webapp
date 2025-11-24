@@ -3,16 +3,13 @@
 
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Droplets, PhoneCall, Truck, LifeBuoy, Check, ArrowRight, Package, Wand2, ScanText, MessageSquareText, LineChart, MonitorSmartphone, HeartHandshake, Briefcase, GitBranch, Terminal, Users, AppWindow, ArrowDown, Star, Quote, LayoutDashboard, UserCheck, CheckCircle } from "lucide-react";
+import { Button, ButtonProps } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ArrowRight, HeartHandshake, Briefcase, GitBranch, Terminal, Users, AppWindow, ArrowDown, Quote, LayoutDashboard, UserCheck, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { LoginDialog } from "@/components/auth/login-dialog";
 import { InteractiveBackground } from "@/components/landing/interactive-background";
-import { Badge } from "@/components/ui/badge";
-// import { EnterpriseSalesDialog } from "@/components/dashboard/enterprise-sales-dialog";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HeaderLoginDialog } from "@/components/auth/header-login-dialog";
@@ -191,72 +188,6 @@ const testimonials = [
     avatar: "https://firebasestorage.googleapis.com/v0/b/smartrefill-singapore/o/App-Image%2Ffilipino-6.jpg?alt=media&token=e9e61427-4a74-4b52-b884-a15d7e48b888"
   }
 ];
-
-const appFeatures = [
-    {
-        icon: <AppWindow className="h-4 w-4" />,
-        title: "Operational Platform",
-        description: "Your all-in-one dashboard to automate operations — from orders, deliveries, and sales, to inventory, staff, and maintenance."
-    },
-    {
-        icon: <GitBranch className="h-4 w-4" />,
-        title: "Acquire Customers",
-        description: "Acquire new customers through Smart Refill Business and the River Mobile App."
-    },
-    {
-        icon: <Terminal className="h-4 w-4" />,
-        title: "Offline-Ready App",
-        description: "No internet? No problem. Smart Refill keeps running and automatically syncs when you're back online."
-    },
-    {
-        icon: <Users className="h-4 w-4" />,
-        title: "Roles & Permissions",
-        description: "Give your team the right access — whether admin, cashier, or delivery staff — so they have the tools they need, and nothing they don’t."
-    }
-];
-
-const FeatureListItem = ({ icon, title, children }: { icon: React.ReactNode, title: React.ReactNode, children: React.ReactNode }) => {
-    return (
-        <div className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors">
-            <div className="flex items-start gap-3">
-                 <div className="text-primary mt-0.5">{icon}</div>
-                <div>
-                    <span className="text-sm font-medium leading-none flex items-center gap-2">{title}</span>
-                    <p className="text-sm leading-snug text-muted-foreground mt-1">
-                        {children}
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const ListItem = React.forwardRef<
-    React.ElementRef<"a">,
-    React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-all hover:shadow-md focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  )
-})
-ListItem.displayName = "ListItem"
-
 
 export default function LandingPage() {
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
@@ -537,11 +468,6 @@ export default function LandingPage() {
                                 Create Account
                             </Button>
                         </HeaderLoginDialog>
-                        {/* <EnterpriseSalesDialog>
-                            <Button variant="link" size="lg" className="text-lg btn-press">
-                                Help My Digital Journey
-                            </Button>
-                        </EnterpriseSalesDialog> */}
                     </div>
                 </div>
             </AnimatedSection>
